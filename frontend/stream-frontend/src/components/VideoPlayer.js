@@ -18,9 +18,9 @@ const VideoPlayer = () => {
 
   const handlePlay = () => {
     console.log("Action: Play");
-    if (stompClient) {
+    if (stompClient && !document.hidden) {
       const message = {
-        "action":"play",
+        "action": "play",
         "timestamp": playerRef.current.getCurrentTime(),
       };
       stompClient.send("/app/send", {}, JSON.stringify(message));
@@ -36,9 +36,9 @@ const VideoPlayer = () => {
 
   const handlePause = () => {
     console.log("Action: Pause");
-    if (stompClient) {
+    if (stompClient && !document.hidden) {
       const message = {
-        "action":"pause",
+        "action": "pause",
         "timestamp": playerRef.current.getCurrentTime(),
       };
       stompClient.send("/app/send", {}, JSON.stringify(message));
@@ -72,20 +72,61 @@ const VideoPlayer = () => {
       // });
 
       client.subscribe("/topic/messages", (message) => {
+
         const data = JSON.parse(message.body)
         console.log("SUB::", data);
         console.log(message.body);
         console.log(data.timestamp);
-        
+
         if (data.action == "play") {
-          setIsPlaying(true);
+          //setIsPlaying(true);
+          const internalPlayer = playerRef.current.getInternalPlayer();
+          // if (internalPlayer && internalPlayer.pause) {
+          //   internalPlayer.play(); // Trigger pause
+          // }
+
+
+          if (internalPlayer && internalPlayer.play) {
+            internalPlayer.play().catch((error) => {
+              if (error.name === "NotAllowedError" || error.name === "AbortError") {
+                alert(
+                  "Playback was interrupted. This might be due to background media restrictions or autoplay policies. Please bring the tab into focus."
+                );
+                console.error("Playback error:", error);
+              } else if (internalPlayer && internalPlayer.pause) {
+                internalPlayer.play(); // Trigger pause
+              }
+            });
+          }
+
+
           playerRef.current.seekTo(data.timestamp, "seconds"); // Seek to the specified time
         } else if (data.action == "pause") {
           //setIsPlaying((prev) => !prev);
-          setIsPlaying(false);
+          //setIsPlaying(false);
+          const internalPlayer = playerRef.current.getInternalPlayer();
+          // if (internalPlayer && internalPlayer.pause) {
+          //   internalPlayer.pause(); // Trigger pause
+          // }
+
+          if (internalPlayer && internalPlayer.pause) {
+            internalPlayer.pause().catch((error) => {
+              if (error.name === "NotAllowedError" || error.name === "AbortError") {
+                alert(
+                  "Playback was interrupted. This might be due to background media restrictions or autoplay policies. Please bring the tab into focus."
+                );
+                console.error("Playback error:", error);
+              } else if (internalPlayer && internalPlayer.play) {
+                internalPlayer.pause(); // Trigger pause
+              }
+            });
+          }
+
           playerRef.current.seekTo(data.timestamp, "seconds"); // Seek to the specified time
         }
-        
+
+
+
       });
     });
 
