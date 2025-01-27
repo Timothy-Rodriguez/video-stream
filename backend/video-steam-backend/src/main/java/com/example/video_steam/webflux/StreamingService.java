@@ -6,6 +6,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import org.springframework.core.io.ClassPathResource;
+
 @Service
 public class StreamingService {
 

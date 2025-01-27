@@ -48,7 +48,7 @@ const VideoPlayer = () => {
 
   useEffect(() => {
     // Establish WebSocket connection
-    const socket = new SockJS("http://localhost:8080/ws");
+    const socket = new SockJS("https://localhost:8080/ws");
     const client = Stomp.over(socket);
 
     client.connect({}, () => {
@@ -158,7 +158,8 @@ const VideoPlayer = () => {
     <div>
       <ReactPlayer
         ref={playerRef}
-        url="http://localhost:8080/video/stream" // Replace with your video URL
+        //url="http://localhost:8080/video/stream" // Replace with your video URL
+        url="https://localhost:8080/video/asv"
         controls
         width="70%"
         height="70%"
