@@ -1,21 +1,20 @@
 package com.example.video_steam.controller;
 
-import com.example.video_steam.security.jwt.JwtUtil;
 import com.example.video_steam.mapping.Room;
 import com.example.video_steam.mapping.RoomRepository;
 import com.example.video_steam.model.JoinRoomRequest;
 import com.example.video_steam.service.RoomService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -31,7 +30,7 @@ public class JoinRoomController {
     }
 
     @PostMapping("/join-room")
-    public ResponseEntity<?> joinRoom(@RequestBody JoinRoomRequest joinRoomRequest) {
+    public ResponseEntity<?> joinRoom(@RequestBody JoinRoomRequest joinRoomRequest, HttpServletResponse response) {
         String roomId = joinRoomRequest.getRoomId();
         String rawPassword = joinRoomRequest.getRoomPassword();
 
@@ -40,26 +39,33 @@ public class JoinRoomController {
             Room room = roomOptional.get();
             boolean matches = roomService.verifyRoomPassword(rawPassword, room.getRoomPassword());
             if (matches) {
-                //return ResponseEntity.ok("Password is correct");
+                // Generate JWT Token
+                String jwtToken = roomService.generateJwtFromIdPassword(roomId, rawPassword);
 
-                // If password is correct, generate JWT. Note: The token in not JWT
-                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                        roomId,
-                        rawPassword
-                );
+                // Set the jwt token in http-only cookie
+                Cookie cookie = new Cookie("jwt", jwtToken);
+                cookie.setHttpOnly(true);
+                cookie.setPath("/"); // cookie accessible across the app
+                response.addCookie(cookie);
 
-                // this will fail if credentials not valid
-                Authentication authentication = manager.authenticate(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                // Get the uuid of the room
+                Map<String, String> responseMap = new HashMap<>();
+                responseMap.put("status", "success");
+                responseMap.put("room", roomOptional.get().getId());
 
-                String jwtToken = JwtUtil.generateToken((User) authentication.getPrincipal());
-                return ResponseEntity.ok(jwtToken);
+                return ResponseEntity.ok(responseMap);
 
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
+                Map<String, String> responseMap = new HashMap<>();
+                responseMap.put("status", "failed");
+                responseMap.put("reason", "Invalid password");
+                return ResponseEntity.status(HttpStatus.OK).body(responseMap);
             }
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Room not found");
+            Map<String, String> responseMap = new HashMap<>();
+            responseMap.put("status", "failed");
+            responseMap.put("reason", "Room not found");
+            return ResponseEntity.status(HttpStatus.OK).body(responseMap);
         }
     }
 }

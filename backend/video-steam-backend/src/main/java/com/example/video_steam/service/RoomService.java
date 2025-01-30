@@ -3,6 +3,12 @@ package com.example.video_steam.service;
 import com.example.video_steam.mapping.Room;
 import com.example.video_steam.mapping.RoomRepository;
 import com.example.video_steam.model.RoomRequest;
+import com.example.video_steam.security.jwt.JwtUtil;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
@@ -11,10 +17,12 @@ import java.util.Optional;
 public class RoomService {
     private final RoomRepository roomRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager manager;
 
-    public RoomService(RoomRepository roomRepository, PasswordEncoder passwordEncoder) {
+    public RoomService(RoomRepository roomRepository, PasswordEncoder passwordEncoder, AuthenticationManager manager) {
         this.roomRepository = roomRepository;
         this.passwordEncoder = passwordEncoder;
+        this.manager = manager;
     }
 
     public String hashPassword(String password) {
@@ -41,5 +49,20 @@ public class RoomService {
 
     public boolean verifyRoomPassword(String rawPassword, String hashedPassword) {
         return passwordEncoder.matches(rawPassword, hashedPassword);
+    }
+
+    public String generateJwtFromIdPassword(String roomId, String rawPassword) {
+        // If password is correct, generate JWT. Note: The token in not JWT
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                roomId,
+                rawPassword
+        );
+
+        // this will fail if credentials not valid
+        Authentication authentication = manager.authenticate(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwtToken = JwtUtil.generateToken((User) authentication.getPrincipal());
+        return jwtToken;
     }
 }
