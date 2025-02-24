@@ -2,13 +2,28 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import axios from "axios";
 
-const VideoPlayer = () => {
+const VideoPlayer = (props) => {
+  
   const playerRef = useRef(null);
+  const [videoUrl, setVideoUrl] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false); // State to manage play/pause
   const [seekValue, setSeekValue] = useState(0);
   const videoRef = useRef(null);
 
+  const getVideo = async() => {
+    let params = new URLSearchParams(document.location.search);
+    let UUID = params.get("roomId"); // is the string "Jonathan"
+
+    // Get video source
+    const response = await axios.get(`https://localhost:8080/room?roomId=${UUID}`)
+    setVideoUrl(response.data)
+  }
+
+  useEffect(() => {
+    getVideo()
+  }, [])
   // const handleSeek = (seconds) => {
   //   console.log(`Action: Seek to ${seconds} seconds`);
   // };
@@ -159,7 +174,7 @@ const VideoPlayer = () => {
       <ReactPlayer
         ref={playerRef}
         //url="http://localhost:8080/video/stream" // Replace with your video URL
-        url="https://localhost:8080/video/I.Want.To.Eat.Your.Pancreas.2018.1080p.BluRay.x264"
+        url={videoUrl}
         controls
         width="70%"
         height="70%"
@@ -177,15 +192,15 @@ const VideoPlayer = () => {
             // attributes: {
             //   crossOrigin: "anonymous", // Required for loading external subtitle files
             // },
-            tracks: [
-              {
-                kind: "subtitles",
-                src: "/i.want.to.eat.your.pancreas.2018.720p.bluray.x264.yts.mx-english.vtt", // Replace with your WebVTT subtitle file URL
-                srcLang: "en",
-                label: "English",
-                default: true,
-              },
-            ],
+            // tracks: [
+            //   {
+            //     kind: "subtitles",
+            //     src: "/i.want.to.eat.your.pancreas.2018.720p.bluray.x264.yts.mx-english.vtt", // Replace with your WebVTT subtitle file URL
+            //     srcLang: "en",
+            //     label: "English",
+            //     default: true,
+            //   },
+            // ],
           },
         }}
       />

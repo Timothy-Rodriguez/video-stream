@@ -31,8 +31,7 @@ public class RoomService {
 
     public Room createRoom(RoomRequest roomRequest) {
         // Check if roomId already exists
-        Optional<Room> existingRoom = roomRepository.findByRoomId(roomRequest.getRoomId());
-        if (existingRoom.isPresent()) {
+        if (roomExists(roomRequest.getRoomId())) {
             throw new IllegalArgumentException("Room ID already exists!");
         }
 
@@ -42,9 +41,23 @@ public class RoomService {
         Room room = new Room();
         room.setRoomId(roomRequest.getRoomId());
         room.setRoomPassword(hashedPassword);
+        room.setMovieFileUrl(roomRequest.getMovieFileUrl());
+        room.setSubtitleFileUrl(roomRequest.getSubtitleFileUrl());
         room.setMovieFileName(roomRequest.getMovieFileName());
         room.setSubtitleFileName(roomRequest.getSubtitleFileName());
         return roomRepository.save(room);
+    }
+
+    public boolean roomExists(String roomId) {
+        Optional<Room> existingRoom = roomRepository.findByRoomId(roomId);
+        if (existingRoom.isPresent()) {
+            return true;
+        }
+        return false;
+    }
+
+    public String getVideoURL(String UUID) {
+        return roomRepository.findById(UUID).get().getMovieFileUrl();
     }
 
     public boolean verifyRoomPassword(String rawPassword, String hashedPassword) {

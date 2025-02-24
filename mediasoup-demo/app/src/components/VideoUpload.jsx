@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Paper, TextField, Button, Typography, Box, LinearProgress, Grid } from '@mui/material';
 import axios from 'axios';
-import toast, { Toaster } from 'react-hot-toast';
 
-const CreateRoom = () => {
+const VideoUpload = () => {
   // Form info state
   const [formDataInfo, setFormDataInfo] = useState({
     roomId: "",
@@ -32,21 +31,7 @@ const CreateRoom = () => {
     console.log(event.target.files[0]);
   };
 
-  const checkRoomExists = async (event) => {
-    try {
-      const response = await axios.get(`https://localhost:8080/check-room?roomId=${event.target.value}`)
-      if (response.data.status === 'success') {
-        toast.success(response.data.reason)
-      } else if (response.data.status === 'error') {
-        toast.error(response.data.reason)
-      }
-      
-    } catch (error) {
-      toast.error(`${error.message}. Please try again!`)
-    }
-  }
   const handleUpload = async () => {
-    toast.loading("Creating room. Please wait...")
     if (!selectedMovieFile) {
       alert('Please select a movie file!');
       return;
@@ -80,15 +65,12 @@ const CreateRoom = () => {
       });
       
       if (response.data.status === 'success') {
-        toast.dismiss()
-        toast.success("Room created!")
         setTimeout(() => {
           window.history.pushState('', '', `/room?roomId=${response.data.room}`)
           window.dispatchEvent(new PopStateEvent("popstate"));
         }, 2000)
       } else {
-        toast.dismiss()
-        toast.error(`Room creation failed: ${response.data.reason}`)
+        alert('error')
       }
 
     } catch (error) {
@@ -103,10 +85,6 @@ const CreateRoom = () => {
   return (
     <>
       <Container maxWidth="sm">
-        <Toaster
-                position="bottom-center"
-                reverseOrder={false}
-              />
         <Paper elevation={3} sx={{ padding: 4, marginTop: 4 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Create Room
@@ -124,7 +102,6 @@ const CreateRoom = () => {
                   name="roomId"
                   value={formDataInfo.RoomId}
                   onChange={handleChange}
-                  onBlur={checkRoomExists}
                   required
                 />
               </Grid>
@@ -220,4 +197,4 @@ const CreateRoom = () => {
   );
 };
 
-export default CreateRoom;
+export default VideoUpload;

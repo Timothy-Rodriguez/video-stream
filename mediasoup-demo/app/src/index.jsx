@@ -26,6 +26,7 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import Home from './components/Home';
 import CreateRoom from './components/CreateRoom';
 import JoinRoom from './components/JoinRoom';
+import VideoUpload from './components/VideoUpload';
 
 const logger = new Logger();
 const reduxMiddlewares = [thunk];
@@ -216,6 +217,7 @@ async function run() {
 						<Route path="/" element={<Home />} />
 						<Route path="/create-room" element={<CreateRoom />} />
 						<Route path="/join-room" element={<JoinRoom />} />
+						<Route path="/file-upload" element={<VideoUpload />} />
 						<Route path="/room" element={
 							<div id='mediasoup-demo-app-container'>
 							<Room />

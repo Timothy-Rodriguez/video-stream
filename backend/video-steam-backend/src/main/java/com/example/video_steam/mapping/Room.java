@@ -21,9 +21,16 @@ public class Room {
     @Column(nullable = false)
     private String roomPassword;
 
-    @Column(nullable = false)
+    @Column
     private String movieFileName;
 
-    @Column(nullable = false)
+    @Column
     private String subtitleFileName;
+
+    @Column(length = 500)
+    private String movieFileUrl;
+
+    @Column
+    private String subtitleFileUrl;
+
 }

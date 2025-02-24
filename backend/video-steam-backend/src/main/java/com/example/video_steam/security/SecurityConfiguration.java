@@ -40,7 +40,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> {
                     authorize.requestMatchers("/join-room").permitAll();
                     authorize.requestMatchers("/create-room").permitAll();
-                    authorize.requestMatchers("/room").authenticated();
+                    authorize.requestMatchers("/file-upload").permitAll();
+                    authorize.requestMatchers("/check-room").permitAll();
+                    authorize.requestMatchers("/room").permitAll();
                     authorize.anyRequest().authenticated();
                 })
 //                .addFilterBefore(

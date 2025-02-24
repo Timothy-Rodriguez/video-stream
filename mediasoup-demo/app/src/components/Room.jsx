@@ -17,7 +17,6 @@ import NetworkThrottle from './NetworkThrottle';
 import VideoPlayer from './VideoPlayer';
 
 class Room extends React.Component {
-
 	render() {
 
 		const { roomClient, room, me, amActiveSpeaker, onRoomLinkCopy } =
@@ -86,7 +85,7 @@ class Room extends React.Component {
 					<div data-component="Peers">
 						<div className='class="peer-container Appear-appear-done Appear-enter-done"'>
 							<div data-component="Peer">
-								<VideoPlayer />
+								<VideoPlayer src="123" />
 							</div>
 						</div>
 					</div>

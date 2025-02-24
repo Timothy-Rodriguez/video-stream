@@ -38,8 +38,8 @@ public class CreateRoomController {
             responseJson.put("status", "success");
             responseJson.put("room", createRoom.getId());
             responseJson.put("roomId", createRoom.getRoomId());
-            responseJson.put("movieFileName", createRoom.getMovieFileName());
-            responseJson.put("subtitleFileName", createRoom.getSubtitleFileName());
+            responseJson.put("movieFileUrl", createRoom.getMovieFileUrl());
+            responseJson.put("subtitleFileUrl", createRoom.getSubtitleFileUrl());
 
             // Generate JWT Token
             String jwtToken = roomService.generateJwtFromIdPassword(roomRequest.getRoomId(), roomRequest.getRoomPassword());
