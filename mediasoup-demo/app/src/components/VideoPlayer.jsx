@@ -3,22 +3,55 @@ import ReactPlayer from "react-player";
 import { Stomp } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
 
 const VideoPlayer = (props) => {
-  
+
   const playerRef = useRef(null);
   const [videoUrl, setVideoUrl] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false); // State to manage play/pause
   const [seekValue, setSeekValue] = useState(0);
   const videoRef = useRef(null);
 
-  const getVideo = async() => {
+  const getVideo = async () => {
     let params = new URLSearchParams(document.location.search);
     let UUID = params.get("roomId"); // is the string "Jonathan"
 
     // Get video source
     const response = await axios.get(`https://localhost:8080/room?roomId=${UUID}`)
-    setVideoUrl(response.data)
+
+    try {
+      const videoResponse = await axios.get(response.data, {
+        headers: {
+          Range: 'bytes=0-0' // Request only the first byte
+        }
+      });
+      console.log(videoResponse);
+      
+      if (videoResponse.status === 206) {
+        setVideoUrl(response.data)
+      }
+    } catch (error) {
+      if (error.status === 404) {
+        toast.error("Video not found! Please create a valid Room.")
+        setTimeout(() => {
+          window.history.pushState('', '', `/create-room`)
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }, 5000)
+      } else {
+        console.log(error);
+        
+        toast.error("Something went wrong! Please create a valid Room.")
+        setTimeout(() => {
+          window.history.pushState('', '', `/create-room`)
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        }, 5000)
+      }
+
+    }
+
+
+
   }
 
   useEffect(() => {
@@ -171,6 +204,10 @@ const VideoPlayer = (props) => {
 
   return (
     <div>
+      <Toaster
+        position="bottom-center"
+        reverseOrder={false}
+      />
       <ReactPlayer
         ref={playerRef}
         //url="http://localhost:8080/video/stream" // Replace with your video URL
