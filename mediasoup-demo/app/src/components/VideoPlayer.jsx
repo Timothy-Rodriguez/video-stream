@@ -12,10 +12,11 @@ const VideoPlayer = (props) => {
   const [isPlaying, setIsPlaying] = useState(false); // State to manage play/pause
   const [seekValue, setSeekValue] = useState(0);
   const videoRef = useRef(null);
+  const [UUID, setUUID] = useState("")
 
   const getVideo = async () => {
     let params = new URLSearchParams(document.location.search);
-    let UUID = params.get("roomId"); // is the string "Jonathan"
+    let UUID = params.get("roomId");
 
     // Get video source
     const response = await axios.get(`https://localhost:8080/room?roomId=${UUID}`)
@@ -57,9 +58,6 @@ const VideoPlayer = (props) => {
   useEffect(() => {
     getVideo()
   }, [])
-  // const handleSeek = (seconds) => {
-  //   console.log(`Action: Seek to ${seconds} seconds`);
-  // };
 
   // WEBSOCKET
   const [stompClient, setStompClient] = useState(null);
@@ -70,9 +68,11 @@ const VideoPlayer = (props) => {
       const message = {
         "action": "play",
         "timestamp": playerRef.current.getCurrentTime(),
+        "roomId": UUID
       };
-      stompClient.send("/app/send", {}, JSON.stringify(message));
-      // setIsPlaying((prev) => !prev);
+      console.log(message.roomId, message.action, message.timestamp);
+      stompClient.send(`/app/send/${UUID}`, {}, JSON.stringify(message));
+      // stompClient.send(`/app/send`, {}, JSON.stringify(message));
     }
   };
 
@@ -88,13 +88,19 @@ const VideoPlayer = (props) => {
       const message = {
         "action": "pause",
         "timestamp": playerRef.current.getCurrentTime(),
+        "roomId": UUID
       };
-      stompClient.send("/app/send", {}, JSON.stringify(message));
-      // setIsPlaying((prev) => !prev);
+      console.log(message.roomId, message.action, message.timestamp);
+      stompClient.send(`/app/send/${UUID}`, {}, JSON.stringify(message));
+      // stompClient.send(`/app/send`, {}, JSON.stringify(message));
     }
   };
 
   useEffect(() => {
+    let params = new URLSearchParams(document.location.search);
+    let uuid = params.get("roomId");
+    setUUID(uuid)
+
     // Establish WebSocket connection
     const socket = new SockJS("https://localhost:8080/ws");
     const client = Stomp.over(socket);
@@ -102,24 +108,8 @@ const VideoPlayer = (props) => {
     client.connect({}, () => {
       console.log("Connected to WebSocket");
 
-      // Subscribe to the sync topic
-      // client.subscribe("/topic/sync", (message) => {
-      //   const { action, timestamp } = JSON.parse(message.body);
-
-      //   // Handle received actions
-      //   if (videoRef.current) {
-      //     if (action === "play") {
-      //       videoRef.current.currentTime = timestamp;
-      //       videoRef.current.play();
-      //     } else if (action === "pause") {
-      //       videoRef.current.pause();
-      //     } else if (action === "seek") {
-      //       videoRef.current.currentTime = timestamp;
-      //     }
-      //   }
-      // });
-
-      client.subscribe("/topic/messages", (message) => {
+      client.subscribe(`/topic/messages/${uuid}`, (message) => {
+      // client.subscribe(`/topic/messages`, (message) => {
 
         const data = JSON.parse(message.body)
         console.log("SUB::", data);
@@ -195,10 +185,12 @@ const VideoPlayer = (props) => {
       const message = {
         action,
         timestamp: videoRef.current.currentTime,
+        roomId
       };
       // stompClient.send("/app/send", {}, JSON.stringify(message));
-      console.log(action);
-      stompClient.send("/app/send", {}, action);
+      console.log(message.roomId, message.action, message.timestamp);
+      stompClient.send(`/app/send/${UUID}`, {}, action);
+      // stompClient.send(`/app/send`, {}, action);
     }
   };
 

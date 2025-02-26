@@ -12,8 +12,8 @@ public class SyncController {
         public int timestamp; // Current timestamp of the video in seconds
     }
 
-    @MessageMapping("/video/action") // Receives messages at /app/video/action
-    @SendTo("/topic/sync") // Broadcasts to /topic/sync
+    @MessageMapping("/video/action/") // Receives messages at /app/video/action
+    @SendTo("/topic/sync/") // Broadcasts to /topic/sync
     public VideoAction syncVideoAction(VideoAction action) {
         // Simply echo the action to all connected clients
         System.out.println(action);

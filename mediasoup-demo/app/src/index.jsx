@@ -27,6 +27,10 @@ import Home from './components/Home';
 import CreateRoom from './components/CreateRoom';
 import JoinRoom from './components/JoinRoom';
 import VideoUpload from './components/VideoUpload';
+import Header from './components/video-stream/Header';
+import Footer from './components/video-stream/Footer';
+import Background from './components/video-stream/Background';
+import { CssBaseline } from '@mui/material';
 
 const logger = new Logger();
 const reduxMiddlewares = [thunk];
@@ -211,6 +215,9 @@ async function run() {
 
 	root.render(
 		<Provider store={store}>
+			<CssBaseline />
+			<Header />
+			{/* <Background /> */}
 			<RoomContext.Provider value={roomClient}>
 				<BrowserRouter>
 					<Routes>
@@ -226,6 +233,7 @@ async function run() {
 					</Routes>
 				</BrowserRouter>
 			</RoomContext.Provider>
+			<Footer />
 		</Provider >
 
 		// <Provider store={store}>
